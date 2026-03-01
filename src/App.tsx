@@ -45,6 +45,7 @@ function App() {
   })();
 
   const velocityPapers = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     return [...trendingData.papers].sort((a, b) => {
       const daysA = Math.max(1, (now - new Date(a.publicationDate).getTime()) / 86_400_000);
