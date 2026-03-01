@@ -23,6 +23,11 @@ export interface OpenAlexWork {
     oa_status: string;
     oa_url: string | null;
   };
+  primary_topic: {
+    id: string;
+    display_name: string;
+    subfield: { id: string; display_name: string };
+  } | null;
 }
 
 export interface OpenAlexAuthorship {
@@ -71,6 +76,13 @@ export interface CMPaper {
   isOpenAccess: boolean;
   oaUrl: string | null;
   pdfUrl: string | null;
+  primaryTopicId: string | null;
+  primaryTopicName: string | null;
+}
+
+export interface TopicInfo {
+  id: string;
+  name: string;
 }
 
 export interface PaperWithS2 extends CMPaper {

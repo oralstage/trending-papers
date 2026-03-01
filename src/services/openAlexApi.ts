@@ -4,7 +4,7 @@ import { OPENALEX_MAILTO, PUBLISHERS } from '../constants';
 
 const BASE_URL = 'https://api.openalex.org/works';
 const PER_PAGE = 100;
-const SELECT_FIELDS = 'id,doi,title,authorships,publication_date,primary_location,locations,concepts,cited_by_count,abstract_inverted_index,open_access';
+const SELECT_FIELDS = 'id,doi,title,authorships,publication_date,primary_location,locations,concepts,cited_by_count,abstract_inverted_index,open_access,primary_topic';
 
 function extractDoi(doiUrl: string | null): string | null {
   if (!doiUrl) return null;
@@ -54,6 +54,8 @@ function toCMPaper(work: OpenAlexWork): CMPaper {
     isOpenAccess: work.open_access.is_oa,
     oaUrl: work.open_access.oa_url ?? null,
     pdfUrl: work.primary_location?.pdf_url ?? null,
+    primaryTopicId: work.primary_topic?.id.replace('https://openalex.org/', '') ?? null,
+    primaryTopicName: work.primary_topic?.display_name ?? null,
   };
 }
 

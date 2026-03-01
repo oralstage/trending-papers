@@ -6,6 +6,7 @@ import { useTrendingPapers } from './hooks/useTrendingPapers';
 import { useBookmarkPapers } from './hooks/useBookmarkPapers';
 import { useSemanticScholar } from './hooks/useSemanticScholar';
 import { useKeywordFilter } from './hooks/useKeywordFilter';
+import { useSubfieldTopics } from './hooks/useSubfieldTopics';
 import { Header } from './components/Header';
 import { TopicSelector } from './components/ConceptSelector';
 import { SubTabBar } from './components/SubTabBar';
@@ -19,7 +20,17 @@ function App() {
   const [windowMonths, setWindowMonths] = useLocalStorage<number>('tp-window', DEFAULT_WINDOW_MONTHS);
   const [subTab, setSubTab] = useLocalStorage<TrendingSubTab>('tp-subtab', 'citations');
   const [bookmarks, setBookmarks] = useLocalStorage<string[]>('tp-bookmarks', []);
+  const [excludedTopicsList, setExcludedTopicsList] = useLocalStorage<string[]>('tp-excluded-topics', []);
+  const excludedTopics = useMemo(() => new Set(excludedTopicsList), [excludedTopicsList]);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const { topicsBySubfield } = useSubfieldTopics(selectedSubfields);
+
+  const toggleExcludedTopic = useCallback((topicId: string) => {
+    setExcludedTopicsList((prev) =>
+      prev.includes(topicId) ? prev.filter((id) => id !== topicId) : [...prev, topicId],
+    );
+  }, [setExcludedTopicsList]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
@@ -84,8 +95,12 @@ function App() {
   );
 
   const displayPapers = useMemo(() => {
-    return filterPapers(enrichedPapers);
-  }, [filterPapers, enrichedPapers]);
+    let filtered = filterPapers(enrichedPapers);
+    if (excludedTopics.size > 0) {
+      filtered = filtered.filter((p) => !p.primaryTopicId || !excludedTopics.has(p.primaryTopicId));
+    }
+    return filtered;
+  }, [filterPapers, enrichedPapers, excludedTopics]);
 
   const matchCount = displayPapers.filter((p) => p.matchesKeyword).length;
 
@@ -127,6 +142,9 @@ function App() {
           <TopicSelector
             selected={selectedSubfields}
             onChange={setSelectedSubfields}
+            topicsBySubfield={topicsBySubfield}
+            excludedTopics={excludedTopics}
+            onToggleExcludedTopic={toggleExcludedTopic}
           />
           <div className="border-t border-gray-100 pt-4">
             <KeywordFilter
